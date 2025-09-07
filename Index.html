@@ -1,0 +1,471 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nepobook</title>
+  <style>
+    :root{
+      --bg:#0f172a; /* slate-900 */
+      --panel:#111827ee; /* gray-900 */
+      --soft:#1f2937; /* gray-800 */
+      --accent:#22c55e; /* green-500 */
+      --text:#e5e7eb; /* gray-200 */
+      --muted:#9ca3af; /* gray-400 */
+      --card:#0b1228; /* custom */
+      --input:#0b1228; /* custom */
+      --border:#26324d; /* custom */
+      --danger:#ef4444;
+      --info:#3b82f6;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(180deg,var(--bg),#020617 60%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    a{color:var(--accent);text-decoration:none}
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(2,6,23,.8);backdrop-filter:blur(8px);display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;border-bottom:1px solid #0b1228}
+    .logo{font-weight:800;letter-spacing:.4px}
+    .logo b{color:var(--accent)}
+    .wrap{max-width:900px;margin:0 auto;padding:1rem;display:grid;grid-template-columns:1fr;gap:1rem}/* Composer */
+.composer{background:linear-gradient(180deg,var(--panel),#0b1228);border:1px solid var(--border);border-radius:18px;padding:1rem;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.row{display:flex;gap:.75rem;flex-wrap:wrap}
+.row > *{flex:1}
+textarea{width:100%;min-height:70px;resize:vertical;border-radius:14px;border:1px solid var(--border);background:var(--input);color:var(--text);padding:.75rem;font-size:1rem}
+.controls{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.chip{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .75rem;background:#091026;border:1px dashed var(--border);border-radius:999px;font-size:.9rem}
+input[type="file"], input[type="url"]{width:100%;border-radius:12px;border:1px solid var(--border);background:var(--input);color:var(--muted);padding:.6rem .75rem}
+.btn{border:0;border-radius:12px;padding:.6rem .9rem;font-weight:600;cursor:pointer;transition:.2s transform,.2s opacity}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#041307}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-danger{background:var(--danger);color:white}
+.right{margin-left:auto}
+
+/* Feed */
+.feed{display:flex;flex-direction:column;gap:1rem}
+.card{background:linear-gradient(180deg,var(--panel),var(--card));border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.card .head{display:flex;gap:.75rem;align-items:center;padding:1rem;border-bottom:1px solid var(--border)}
+.avatar{height:40px;width:40px;border-radius:999px;background:linear-gradient(45deg,#22c55e,#3b82f6);display:grid;place-items:center;font-weight:800;color:#041307}
+.meta{display:flex;flex-direction:column}
+.meta .name{font-weight:700}
+.meta .time{font-size:.85rem;color:var(--muted)}
+.content{padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.text{white-space:pre-wrap;line-height:1.5}
+.gallery{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.gallery img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
+.video{width:100%;border-radius:12px;border:1px solid var(--border);background:black}
+
+.stats{display:flex;justify-content:space-between;align-items:center;color:var(--muted);padding:.5rem 1rem;border-top:1px solid var(--border)}
+.actions{display:flex;gap:.5rem;padding:.5rem 1rem 1rem}
+.action{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;border-radius:12px;border:1px solid var(--border);background:#0a1229;cursor:pointer;padding:.6rem .75rem;font-weight:600}
+.action[aria-pressed="true"]{outline:2px solid var(--accent);}
+.comments{padding:0 1rem 1rem;display:flex;flex-direction:column;gap:.5rem}
+.comment{display:flex;gap:.5rem}
+.comment .bubble{background:#0a132d;border:1px solid var(--border);padding:.5rem .75rem;border-radius:12px}
+.comment .who{font-weight:700;margin-right:.35rem}
+.comment-input{display:flex;gap:.5rem}
+.comment-input input{flex:1;border-radius:12px;border:1px solid var(--border);background:var(--input);color:var(--text);padding:.6rem .75rem}
+
+.empty{opacity:.8;text-align:center;padding:2rem;border:1px dashed var(--border);border-radius:14px}
+.hint{font-size:.85rem;color:var(--muted)}
+.footer{opacity:.6;text-align:center;padding:2rem 0}
+
+.pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;border-radius:999px;border:1px solid var(--border);background:#08112a;color:var(--muted);font-size:.8rem}
+.nowrap{white-space:nowrap}
+
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">🌄 <b>Nepo</b>book</div>
+    <span class="pill">Local demo • no server</span>
+    <span class="pill">Data saved in your browser</span>
+    <button class="btn btn-ghost right" id="clearAll">Reset Demo</button>
+  </header>  <main class="wrap">
+    <section class="composer card">
+      <div class="row" style="align-items:center">
+        <div class="avatar">N</div>
+        <div style="flex:1">
+          <textarea id="statusText" placeholder="What's on your mind? Write a status…"></textarea>
+          <div class="controls">
+            <label class="chip" title="Attach photos">
+              📷 Images
+              <input id="imageInput" type="file" accept="image/*" multiple hidden>
+            </label>
+            <label class="chip" title="Attach a video file">
+              🎬 Video File
+              <input id="videoInput" type="file" accept="video/*" hidden>
+            </label>
+            <label class="chip" title="Paste a video link (YouTube, MP4, etc.)">
+              🔗 Video URL
+              <input id="videoUrl" type="url" placeholder="https://…" />
+            </label>
+            <span class="hint">Tip: You can post text only, photos, a video, or mix text + media.</span>
+            <button id="postBtn" class="btn btn-primary right">Post</button>
+          </div>
+        </div>
+      </div>
+    </section><section id="feed" class="feed"></section>
+
+<div class="footer">Made for you with ❤ — Nepobook demo (single‑file, client‑side)</div>
+
+  </main><script>
+(function(){
+  const STORAGE_KEY = 'nepobook_posts_v1';
+  const LIKE_KEY = 'nepobook_likes_v1'; // store postIds liked by this browser
+  const VIEW_KEY = 'nepobook_views_v1'; // track viewed posts to avoid double counts per session
+
+  /** UTIL **/
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const now = () => new Date().toISOString();
+  const fmtTime = iso => {
+    const d = new Date(iso);
+    const diff = (Date.now() - d.getTime())/1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60)+ 'm';
+    if (diff < 86400) return Math.floor(diff/3600)+ 'h';
+    return d.toLocaleString();
+  }
+  const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+  const read = (key, fallback) => {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback } catch { return fallback }
+  }
+  const write = (key, val) => localStorage.setItem(key, JSON.stringify(val));
+
+  let posts = read(STORAGE_KEY, []);
+  let liked = new Set(read(LIKE_KEY, []));
+  let viewed = new Set(read(VIEW_KEY, []));
+
+  /** COMPOSER **/
+  const statusText = $('#statusText');
+  const imageInput = $('#imageInput');
+  const videoInput = $('#videoInput');
+  const videoUrl = $('#videoUrl');
+  const postBtn = $('#postBtn');
+
+  async function filesToDataUrls(fileList){
+    const files = Array.from(fileList || []);
+    const results = await Promise.all(files.map(file => new Promise(res=>{
+      const fr = new FileReader();
+      fr.onload = e => res({ name:file.name, data:e.target.result, type:file.type });
+      fr.readAsDataURL(file);
+    })));
+    return results;
+  }
+
+  postBtn.addEventListener('click', async () => {
+    const text = statusText.value.trim();
+    const images = await filesToDataUrls(imageInput.files);
+    let video = null;
+
+    // If file upload provided, prefer it; else use URL if given
+    if (videoInput.files && videoInput.files[0]){
+      const [file] = await filesToDataUrls(videoInput.files);
+      video = { kind:'file', src:file.data, type:file.type || 'video/mp4' };
+    } else if (videoUrl.value.trim()){
+      const url = videoUrl.value.trim();
+      video = { kind: url.includes('youtube.com')||url.includes('youtu.be') ? 'youtube' : 'url', src:url };
+    }
+
+    if (!text && images.length===0 && !video){
+      alert('Write something or add media before posting.');
+      return;
+    }
+
+    const post = {
+      id: uid(),
+      author: 'Visitor',
+      text,
+      images, // array of {name,data,type}
+      video,  // {kind,src,type}
+      createdAt: now(),
+      likes: 0,
+      shares: 0,
+      views: 0,
+      comments: []
+    };
+
+    posts.unshift(post);
+    persist();
+    clearComposer();
+    renderFeed();
+    // Jump to top of feed
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  function clearComposer(){
+    statusText.value='';
+    imageInput.value='';
+    videoInput.value='';
+    videoUrl.value='';
+  }
+
+  function persist(){
+    write(STORAGE_KEY, posts);
+    write(LIKE_KEY, Array.from(liked));
+    write(VIEW_KEY, Array.from(viewed));
+  }
+
+  /** FEED RENDER **/
+  const feed = $('#feed');
+
+  function createPostEl(p){
+    const el = document.createElement('article');
+    el.className = 'card';
+    el.id = `post-${p.id}`;
+
+    // head
+    const head = document.createElement('div');
+    head.className = 'head';
+    head.innerHTML = `
+      <div class="avatar">${p.author.charAt(0).toUpperCase()}</div>
+      <div class="meta">
+        <div class="name">${escapeHtml(p.author)} <span class="pill nowrap">Public</span></div>
+        <div class="time">${fmtTime(p.createdAt)}</div>
+      </div>
+      <div class="right hint">ID: ${p.id.slice(0,6)}</div>
+    `;
+
+    // content
+    const content = document.createElement('div');
+    content.className = 'content';
+    if (p.text){
+      const t = document.createElement('div');
+      t.className = 'text';
+      t.textContent = p.text;
+      content.appendChild(t);
+    }
+    if (p.images && p.images.length){
+      const gal = document.createElement('div');
+      gal.className = 'gallery';
+      p.images.forEach(img => {
+        const i = document.createElement('img');
+        i.loading = 'lazy';
+        i.src = img.data;
+        i.alt = img.name || 'image';
+        gal.appendChild(i);
+      });
+      content.appendChild(gal);
+    }
+    if (p.video){
+      if (p.video.kind === 'youtube'){
+        const iframe = document.createElement('iframe');
+        iframe.className = 'video';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        iframe.src = toYouTubeEmbed(p.video.src);
+        iframe.height = 360;
+        content.appendChild(iframe);
+      } else if (p.video.kind === 'url' || p.video.kind === 'file'){
+        const v = document.createElement('video');
+        v.className = 'video';
+        v.controls = true;
+        v.src = p.video.src;
+        if (p.video.type) v.type = p.video.type;
+        content.appendChild(v);
+      }
+    }
+
+    // stats
+    const stats = document.createElement('div');
+    stats.className = 'stats';
+    const left = document.createElement('div');
+    left.innerHTML = `👍 <span class="likeCount">${p.likes}</span>`;
+    const right = document.createElement('div');
+    right.innerHTML = `<span class="pill">👁️ <span class="viewCount">${p.views}</span> views</span> <span class="pill">🔁 <span class="shareCount">${p.shares}</span> shares</span>`;
+    stats.append(left,right);
+
+    // actions
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+
+    const likeBtn = document.createElement('button');
+    likeBtn.className = 'action';
+    likeBtn.innerHTML = '👍 Like';
+    likeBtn.setAttribute('aria-pressed', liked.has(p.id));
+    likeBtn.addEventListener('click', ()=>toggleLike(p.id, el));
+
+    const commentBtn = document.createElement('button');
+    commentBtn.className = 'action';
+    commentBtn.innerHTML = '💬 Comment';
+    commentBtn.addEventListener('click', ()=>{
+      const input = el.querySelector('.comment-input input');
+      input?.focus();
+    });
+
+    const shareBtn = document.createElement('button');
+    shareBtn.className = 'action';
+    shareBtn.innerHTML = '🔗 Share';
+    shareBtn.addEventListener('click', ()=>doShare(p, el));
+
+    actions.append(likeBtn,commentBtn,shareBtn);
+
+    // comments section
+    const commentsWrap = document.createElement('div');
+    commentsWrap.className = 'comments';
+
+    const list = document.createElement('div');
+    list.className = 'comment-list';
+    p.comments.forEach(c => list.appendChild(commentEl(c)));
+
+    const form = document.createElement('div');
+    form.className = 'comment-input';
+    const name = `Visitor-${(localStorage.getItem('nb_name')||'').slice(0,10) || (Math.random()*1000|0)}`;
+    const input = document.createElement('input');
+    input.placeholder = 'Write a comment…';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.textContent = 'Post';
+    btn.addEventListener('click', ()=>{
+      const text = input.value.trim();
+      if(!text) return;
+      const c = { id: uid(), who: name, text, at: now() };
+      p.comments.push(c);
+      input.value = '';
+      persist();
+      list.appendChild(commentEl(c));
+    });
+    form.append(input,btn);
+
+    commentsWrap.append(list,form);
+
+    el.append(head,content,stats,actions,commentsWrap);
+
+    // view tracking
+    observeViews(el, p.id);
+
+    return el;
+  }
+
+  function commentEl(c){
+    const row = document.createElement('div');
+    row.className = 'comment';
+    row.innerHTML = `
+      <div class="avatar" style="width:28px;height:28px;font-size:.9rem">${(c.who||'V')[0]}</div>
+      <div class="bubble"><span class="who">${escapeHtml(c.who||'Visitor')}</span> ${escapeHtml(c.text)} <span class="hint">· ${fmtTime(c.at)}</span></div>
+    `;
+    return row;
+  }
+
+  function renderFeed(){
+    feed.innerHTML = '';
+    if (!posts.length){
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = `No posts yet. Be the first to share a status, photo, or video!`;
+      feed.appendChild(empty);
+      return;
+    }
+    posts.forEach(p => feed.appendChild(createPostEl(p)));
+    // If URL hash points to a post, scroll to it
+    const hash = location.hash.slice(1);
+    if (hash.startsWith('post-')){
+      const el = document.getElementById(hash);
+      el?.scrollIntoView({behavior:'smooth', block:'center'});
+      el?.classList.add('highlight');
+      setTimeout(()=>el?.classList.remove('highlight'), 1500);
+    }
+  }
+
+  /** LIKE / SHARE / VIEWS **/
+  function toggleLike(postId, el){
+    const p = posts.find(x=>x.id===postId);
+    if(!p) return;
+    const key = postId;
+    const has = liked.has(key);
+    if (has){ p.likes = Math.max(0, p.likes-1); liked.delete(key); }
+    else { p.likes++; liked.add(key); }
+    persist();
+    // update UI
+    el.querySelector('.likeCount').textContent = p.likes;
+    el.querySelector('.action').setAttribute('aria-pressed', liked.has(key));
+  }
+
+  function doShare(post, el){
+    const url = location.origin + location.pathname + '#post-' + post.id;
+    const text = (post.text && post.text.slice(0,120)) || 'Check out this Nepobook post';
+    const shareData = { title:'Nepobook', text, url };
+    const onDone = () => {
+      post.shares++; persist();
+      el.querySelector('.shareCount').textContent = post.shares;
+      toast('Share link ready');
+    }
+    if (navigator.share){
+      navigator.share(shareData).then(onDone).catch(()=>{});
+    } else {
+      navigator.clipboard?.writeText(url).then(onDone).catch(()=>{
+        prompt('Copy this link:', url);
+        onDone();
+      });
+    }
+  }
+
+  // intersection observer to count views once per session per post
+  let observer;
+  function observeViews(el, postId){
+    if (!observer){
+      observer = new IntersectionObserver(entries => {
+        for (const entry of entries){
+          if (entry.isIntersecting){
+            const id = entry.target.id.replace('post-','');
+            if (!viewed.has(id)){
+              const p = posts.find(x=>x.id===id);
+              if (p){
+                p.views++; viewed.add(id); persist();
+                entry.target.querySelector('.viewCount').textContent = p.views;
+              }
+            }
+          }
+        }
+      }, { threshold:.6 });
+    }
+    observer.observe(el);
+  }
+
+  /** HELPERS **/
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"]+/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+  }
+  function toYouTubeEmbed(url){
+    try{
+      // Support youtu.be/ID and youtube.com/watch?v=ID
+      const u = new URL(url);
+      let id = '';
+      if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
+      else id = u.searchParams.get('v');
+      return `https://www.youtube.com/embed/${id}`;
+    }catch{ return url }
+  }
+
+  // tiny toast
+  let toastEl;
+  function toast(msg){
+    if (!toastEl){
+      toastEl = document.createElement('div');
+      toastEl.style.position='fixed';toastEl.style.bottom='20px';toastEl.style.left='50%';toastEl.style.transform='translateX(-50%)';toastEl.style.background='#0b1228';toastEl.style.border='1px solid var(--border)';toastEl.style.padding='10px 14px';toastEl.style.borderRadius='10px';toastEl.style.boxShadow='0 10px 24px rgba(0,0,0,.4)';toastEl.style.zIndex='1000';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = msg;toastEl.style.opacity='1';
+    setTimeout(()=> toastEl.style.opacity='0', 1200);
+  }
+
+  /** RESET **/
+  $('#clearAll').addEventListener('click', ()=>{
+    if (confirm('Reset demo and clear all posts?')){
+      posts = []; liked = new Set(); viewed = new Set();
+      persist(); renderFeed();
+    }
+  });
+
+  // Seed demo content if empty
+  if (!posts.length){
+    posts = [
+      {id:uid(), author:'Admin', text:'Welcome to Nepobook! Post a status, add photos 📷 or a video 🎬. Likes, comments, shares, and views are all tracked locally in your browser.', images:[], video:null, createdAt:now(), likes:3, shares:1, views:5, comments:[{id:uid(), who:'NepoBot', text:'Have fun! 🎉', at:now()}]},
+    ];
+    persist();
+  }
+
+  renderFeed();
+})();
+</script></body>
+</html>
